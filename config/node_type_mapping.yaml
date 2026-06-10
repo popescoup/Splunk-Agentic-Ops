@@ -1,0 +1,56 @@
+# MABE Detector — Node Type Mapping
+# ====================================
+# Maps destination port numbers to node type categories.
+# This is the intended customization point for non-standard environments.
+#
+# STANDARD PORT DEFAULTS
+# ----------------------
+# Based on IANA-registered standard ports that are rarely changed
+# in enterprise environments. The signal is reliable for:
+#   - domain_controller: ports 88, 389, 636, 3268, 3269
+#   - database: ports 1433, 5432, 3306, 1521
+#   - file_server: ports 445, 2049, 139
+#   - logging_infrastructure: ports 514, 6514, 9200, 5601
+#
+# CUSTOMIZATION NOTES
+# -------------------
+# When multiple node types share a port (e.g. 443 for both api_endpoint
+# and container_registry), the first entry in this file wins in the
+# port→type lookup. List more specific types before more general ones.
+# Non-standard port assignments in your environment: add them here.
+
+domain_controller:
+  - 88     # Kerberos
+  - 389    # LDAP
+  - 636    # LDAPS
+  - 3268   # Global Catalog LDAP
+  - 3269   # Global Catalog LDAPS
+
+database:
+  - 1433   # Microsoft SQL Server
+  - 5432   # PostgreSQL
+  - 3306   # MySQL / MariaDB
+  - 1521   # Oracle
+
+container_registry:
+  - 5000   # Docker Registry (default)
+  - 8080   # Helm / alternative registry
+
+file_server:
+  - 445    # SMB / CIFS
+  - 2049   # NFS
+  - 139    # NetBIOS SMB
+
+logging_infrastructure:
+  - 514    # Syslog (UDP/TCP)
+  - 6514   # Syslog TLS
+  - 9200   # Elasticsearch
+  - 5601   # Kibana
+
+api_endpoint:
+  - 80     # HTTP
+  - 443    # HTTPS
+  - 8443   # HTTPS alternative
+
+workstation:
+  - 3389   # RDP

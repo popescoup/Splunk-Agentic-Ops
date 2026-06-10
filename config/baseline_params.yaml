@@ -1,0 +1,23 @@
+# MABE Detector — Baseline Construction Parameters
+# ==================================================
+# Controls how per-account behavioral baselines are built.
+# Baselines are fully unsupervised — no labels required.
+
+# Minimum number of sessions an account must have before an individual
+# baseline is used. Accounts below this threshold use the population baseline.
+minimum_sessions: 5
+
+# Fraction of sessions a dst_host value must appear in to be considered
+# a "typical" destination for the account.
+# 0.20 = must appear in at least 20% of sessions
+typical_destination_threshold: 0.20
+
+# Lookback window for baseline construction.
+# null  = use all available session history
+# N     = use last N sessions (by order in input)
+# In real deployment: replace with a time-based window (e.g. "30d")
+lookback_window: null
+
+# Whether to use a population-level baseline as fallback for accounts
+# with insufficient individual history.
+population_fallback_enabled: true

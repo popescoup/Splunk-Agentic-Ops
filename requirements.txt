@@ -1,0 +1,12 @@
+# MABE Detector — Dependencies
+# ==============================
+# Core detection (shared)
+pyyaml>=6.0
+
+# Splunk specialization
+splunk-sdk>=2.0.0          # Splunk Python SDK — REST API client used alongside MCP
+anthropic>=0.40.0          # Narrative enhancement via Claude API
+python-dotenv>=1.0.0       # .env loading for SPLUNK_HOST, SPLUNK_TOKEN, ANTHROPIC_API_KEY
+
+# Utilities
+numpy>=1.26                # Used in dataset_stats.py for percentile computation

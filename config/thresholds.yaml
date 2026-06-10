@@ -1,0 +1,147 @@
+# MABE Detector — Threshold and Weight Configuration
+# =====================================================
+# All configurable parameters for the detection system.
+# No thresholds or weights are hardcoded in mechanism implementations.
+#
+# TUNING GUIDE
+# ------------
+# For SIFT forensic deployment (recall-optimized):
+#   alert_threshold: 0.35
+#   Reduce L1 stddev multipliers to catch more sessions.
+#
+# For Splunk real-time SOC deployment (precision-optimized):
+#   alert_threshold: 0.60
+#   Increase L1 stddev multipliers to reduce false positives.
+
+# ---------------------------------------------------------------------------
+# Cross-mechanism weights (must sum to 1.0)
+# ---------------------------------------------------------------------------
+# Reflects signal specificity and false positive risk:
+#   velocity: highest FP risk (legitimate automation can be fast)
+#   enumeration: moderate FP risk
+#   priv_escalation: lowest FP risk (harvest→escalation sequence is specific)
+
+weights:
+  velocity:         0.25
+  enumeration:      0.35
+  priv_escalation:  0.40
+
+# ---------------------------------------------------------------------------
+# Layer weights (applied within each mechanism, must sum to 1.0)
+# ---------------------------------------------------------------------------
+# Higher layers carry more weight — they represent richer, more specific
+# evidence. Maximum confidence per layer:
+#   L1 only:    0.20
+#   L1 + L2:    0.55
+#   All three:  1.00
+
+layer_weights:
+  L1: 0.20
+  L2: 0.35
+  L3: 0.45
+
+# ---------------------------------------------------------------------------
+# High-confidence floor rule
+# ---------------------------------------------------------------------------
+# If any single mechanism produces confidence > trigger_threshold,
+# overall_confidence is set to max(overall_confidence, floor_value).
+# Ensures near-certain single-mechanism signals still trigger alerts.
+
+high_confidence_floor:
+  trigger_threshold: 0.90
+  floor_value:       0.75
+
+# ---------------------------------------------------------------------------
+# Alert threshold
+# ---------------------------------------------------------------------------
+# Override per deployment context:
+#   SIFT forensic:      0.35  (recall-optimized)
+#   Splunk real-time:   0.60  (precision-optimized)
+
+alert_threshold: 0.50
+
+# ---------------------------------------------------------------------------
+# Velocity mechanism
+# ---------------------------------------------------------------------------
+
+velocity:
+  # Layer 1: aggregate session rate
+  # Trip-wire fires when session rate exceeds mean + N * std of observed distribution
+  L1_dynamic_threshold_stddev_multiplier: 3.0
+  # Upper calibration point for L1 intensity ramp
+  # At this ratio (observed_rate / baseline_rate), intensity = 1.0
+  L1_intensity_upper_ratio: 10.0
+
+  # Layer 2: median inter-event gap
+  # Trip-wire fires when session median gap falls below Nth percentile
+  # of observed distribution (bottom 5% = only clearly machine-speed)
+  L2_dynamic_threshold_percentile: 5.0
+  # Lower calibration point (ms): at or below this, intensity = 1.0
+  L2_intensity_floor_ms: 100.0
+
+  # Layer 3: distributional consistency (coefficient of variation)
+  # Low CV = machine-like consistency; High CV = human-like irregularity
+  # Layer 3 fires when session is fast (L2 fired) AND CV is low
+  # CV upper calibration: at or below this CV, intensity = 1.0
+  L3_cv_upper_calibration_point: 0.30
+  # CV lower calibration: at or above this CV, intensity = 0.0 (human-like)
+  L3_cv_lower_calibration_point: 1.20
+
+# ---------------------------------------------------------------------------
+# Enumeration mechanism
+# ---------------------------------------------------------------------------
+
+enumeration:
+  # Layer 1: raw destination count
+  # Trip-wire fires when distinct dst_host count exceeds mean + N * std
+  L1_dynamic_threshold_stddev_multiplier: 2.0
+  # Upper calibration: at this many std deviations above mean, intensity = 1.0
+  L1_intensity_upper_stddev_multiplier: 6.0
+
+  # Layer 2: cross-segment and node-type anomaly
+  # Minimum distinct segments to trigger sub-signal A
+  L2_segment_diversity_threshold: 2
+  # Upper calibration for segment diversity intensity
+  L2_segment_diversity_upper: 4
+
+  # Layer 3: behavioral baseline deviation
+  # Thresholds for each deviation component
+  L3_new_host_ratio_threshold:        0.50   # > 50% new hosts triggers
+  L3_new_host_ratio_upper:            0.90   # at 90%, intensity = 1.0
+  L3_nt_shift_threshold:              0.40   # L1 distance > 0.4 triggers
+  L3_nt_shift_upper:                  1.20   # at 1.2, intensity = 1.0
+  L3_breadth_zscore_threshold:        2.0    # > 2 std above mean triggers
+  L3_breadth_zscore_upper:            5.0    # at 5 std, intensity = 1.0
+
+  # Weights for the three L3 deviation components (must sum to 1.0)
+  L3_component_weights:
+    new_host_ratio:               0.40
+    node_type_distribution_shift: 0.35
+    session_breadth_zscore:       0.25
+
+# ---------------------------------------------------------------------------
+# Privilege escalation mechanism
+# ---------------------------------------------------------------------------
+
+priv_escalation:
+  # Layer 2: temporal proximity window for harvest→escalation sequence
+  # Default 300 seconds (5 minutes)
+  L2_time_window_seconds: 300
+
+  # Layer 2: intensity calibration for temporal proximity
+  # At delta_seconds = 0, intensity = 1.0
+  # At delta_seconds = L2_time_window_seconds, intensity = 0.0
+  # Linear interpolation between these points
+
+  # Layer 3: sub-signal weights (must sum to 1.0)
+  L3_depth_weight:    0.45
+  L3_gap_weight:      0.35
+  L3_velocity_weight: 0.20
+
+  # Layer 3: calibration points
+  # Chain depth: at this depth, intensity = 1.0
+  L3_depth_upper: 3
+  # Privilege gap: at this gap (levels jumped in one step), intensity = 1.0
+  L3_gap_upper: 2
+  # Escalation velocity: at or below this many seconds to highest priv, intensity = 1.0
+  L3_velocity_upper_seconds: 60.0
