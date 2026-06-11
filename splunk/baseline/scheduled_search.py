@@ -202,7 +202,7 @@ search index={index} sourcetype=mabe:* earliest=-{lookback_days}d@d latest=now
 | eval account=user
 | table account session_count mean_destination_count std_destination_count
         all_dests_mv all_node_types_mv baseline_mode last_updated
-| outputlookup {KV_COLLECTION_NAME} append=false key_field=account
+| outputlookup mabe_baselines.csv
 """
     return spl.strip()
 
@@ -257,7 +257,7 @@ search index={index} sourcetype=mabe:* earliest=-{lookback_days}d@d latest=now
 | eval last_updated=strftime(now(), "%Y-%m-%dT%H:%M:%S.000Z")
 | table account session_count mean_destination_count std_destination_count
         all_dests_mv all_node_types_mv baseline_mode last_updated
-| outputlookup {KV_COLLECTION_NAME} append=true key_field=account
+| outputlookup mabe_baselines.csv append=true
 """
     return spl.strip()
 

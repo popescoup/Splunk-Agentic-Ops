@@ -133,6 +133,13 @@ priv_escalation:
   # At delta_seconds = L2_time_window_seconds, intensity = 0.0
   # Linear interpolation between these points
 
+  # Per-mechanism layer weights — overrides global layer_weights
+  # Set high L3 weight so baseline deviation is required to score highly
+  layer_weights:
+    L1: 0.05
+    L2: 0.15
+    L3: 0.80
+
   # Layer 3: sub-signal weights (must sum to 1.0)
   L3_depth_weight:    0.45
   L3_gap_weight:      0.35

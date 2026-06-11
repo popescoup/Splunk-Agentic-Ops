@@ -235,8 +235,8 @@ class KVBaselineReader:
             True if refresh is needed, False if baselines are fresh.
         """
         spl = (
-            f"| inputlookup {self._collection}"
-            f" | stats max(last_updated) as newest_update"
+            "| inputlookup mabe_baselines.csv"
+            " | stats max(last_updated) as newest_update"
         )
 
         try:
@@ -289,14 +289,12 @@ class KVBaselineReader:
     def _build_lookup_spl(self, account: str) -> str:
         """SPL to fetch a single account row from the KV Store."""
         safe_account = account.replace('"', '\\"')
-        return (
-            f'| inputlookup {self._collection}'
-            f' where account="{safe_account}"'
-        )
+        return (f'| inputlookup mabe_baselines.csv'
+        f' | where account="{safe_account}"')
 
     def _build_lookup_all_spl(self) -> str:
         """SPL to fetch all rows from the KV Store."""
-        return f"| inputlookup {self._collection}"
+        return "| inputlookup mabe_baselines.csv"
 
     def get_lookup_spl(self, account: str) -> str:
         """

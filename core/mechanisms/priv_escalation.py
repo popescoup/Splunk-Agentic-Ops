@@ -137,7 +137,18 @@ class PrivEscMechanism:
     ) -> None:
         cfg = thresholds or load_thresholds()
         self._p_cfg = cfg.get("priv_escalation", {})
-        self._layer_weights = layer_weights_override or get_layer_weights(cfg)
+        # Use mechanism-specific layer weights if defined, otherwise global
+        mechanism_layer_weights = self._p_cfg.get("layer_weights")
+        if layer_weights_override:
+            self._layer_weights = layer_weights_override
+        elif mechanism_layer_weights:
+            self._layer_weights = {
+                "L1": float(mechanism_layer_weights.get("L1", 0.20)),
+                "L2": float(mechanism_layer_weights.get("L2", 0.35)),
+                "L3": float(mechanism_layer_weights.get("L3", 0.45)),
+            }
+        else:
+            self._layer_weights = get_layer_weights(cfg)
         self._classifier = classifier or NodeClassifier()
         self._time_window_s = float(
             self._p_cfg.get("L2_time_window_seconds", 300.0)
