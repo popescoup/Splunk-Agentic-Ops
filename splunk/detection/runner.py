@@ -297,6 +297,11 @@ class DetectionRunner:
         """
         outputs: list[MechanismOutput] = []
 
+        # Temporary debug — remove after diagnosis
+        sample = events[:3]
+        for e in sample:
+            logger.info("DEBUG event fields: %s", {k: v for k, v in e.items() if k in ('event_type', 'timestamp', 'success', 'dst_port')})
+
         # ── Velocity ──────────────────────────────────────────────────
         try:
             vel_output = self._velocity.evaluate(

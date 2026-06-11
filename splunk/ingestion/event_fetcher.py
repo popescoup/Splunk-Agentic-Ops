@@ -210,6 +210,7 @@ class EventFetcher:
             f'search index={self._index}'
             f' sourcetype={self._sourcetype_filter}'
             f' mabe_session_id="{safe_sid}"'
+            f' | spath input=_raw path=_time output=_time'
             f' | table'
             f'   _time dest dest_port src user action app'
             f'   sourcetype mabe_event_type mabe_session_id'

@@ -185,8 +185,8 @@ def map_event(splunk_event: dict) -> dict:
     # ── Network addressing ────────────────────────────────────────────────
     dest = splunk_event.get("dest")
     if dest:
-        mapped["dst_host"] = str(dest)
-        mapped["dest"] = str(dest)         # keep 'dest' alias for baseline.py
+        mapped["dst_host"] = dest[0] if isinstance(dest, list) else str(dest)
+        mapped["dest"] = dest[0] if isinstance(dest, list) else str(dest)
 
     raw_port = splunk_event.get("dest_port")
     if raw_port is not None:
@@ -197,12 +197,12 @@ def map_event(splunk_event: dict) -> dict:
 
     src = splunk_event.get("src")
     if src:
-        mapped["src_host"] = str(src)
+        mapped["src_host"] = src[0] if isinstance(src, list) else str(src)
 
     # ── Identity ──────────────────────────────────────────────────────────
     user = splunk_event.get("user")
     if user:
-        mapped["user"] = str(user)
+        mapped["user"] = user[0] if isinstance(user, list) else str(user)
 
     # ── Outcome ───────────────────────────────────────────────────────────
     action = splunk_event.get("action")
@@ -214,24 +214,24 @@ def map_event(splunk_event: dict) -> dict:
     # NodeClassifier.classify_event() reads e.get("protocol").
     app = splunk_event.get("app")
     if app:
-        mapped["protocol"] = str(app)
+        mapped["protocol"] = app[0] if isinstance(app, list) else str(app)
 
     # ── Event classification ──────────────────────────────────────────────
     # mabe_event_type carries the canonical event type used by priv_esc
     # mechanism for event_type == "auth_attempt", "file_access", etc.
     event_type = splunk_event.get("mabe_event_type")
     if event_type:
-        mapped["event_type"] = str(event_type)
+        mapped["event_type"] = event_type[0] if isinstance(event_type, list) else str(event_type)
 
     # ── Session identity ─────────────────────────────────────────────────
     session_id = splunk_event.get("mabe_session_id")
     if session_id:
-        mapped["session_id"] = str(session_id)
+        mapped["session_id"] = session_id[0] if isinstance(session_id, list) else str(session_id)
 
     # ── Splunk metadata (passed through for EvidenceRef.event_id) ─────────
     sourcetype = splunk_event.get("sourcetype")
     if sourcetype:
-        mapped["sourcetype"] = str(sourcetype)
+        mapped["sourcetype"] = sourcetype[0] if isinstance(sourcetype, list) else str(sourcetype)
 
     return mapped
 

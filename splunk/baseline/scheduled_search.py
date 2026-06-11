@@ -322,7 +322,6 @@ class BaselineKVManager:
             # Create with field type accelerators for the key field
             self._service.kvstore.create(
                 KV_COLLECTION_NAME,
-                fields_list=self._build_fields_list(),
             )
             logger.info(
                 "Created KV Store collection '%s'.",

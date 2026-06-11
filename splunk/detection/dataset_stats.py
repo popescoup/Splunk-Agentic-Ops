@@ -233,8 +233,10 @@ class DatasetStatsComputer:
         # Group timestamps by session
         sessions_ts: dict[str, list[str]] = {}
         for row in raw_rows:
-            sid = row.get("mabe_session_id", "").strip()
-            ts  = row.get("_time", "").strip()
+            sid_raw = row.get("mabe_session_id", "")
+            sid = (sid_raw[0] if isinstance(sid_raw, list) else sid_raw).strip()
+            ts_raw = row.get("event_time", "")
+            ts = (ts_raw[0] if isinstance(ts_raw, list) else ts_raw).strip()
             if sid and ts:
                 sessions_ts.setdefault(sid, []).append(ts)
 
@@ -316,8 +318,9 @@ class DatasetStatsComputer:
             f"search index={self._index}"
             f" sourcetype={self._sourcetype}"
             f" earliest=-{self._lookback_days}d@d latest=now"
-            f" | table _time mabe_session_id"
-            f" | sort mabe_session_id _time"
+            f" | spath input=_raw path=_time output=event_time"
+            f" | table event_time mabe_session_id"
+            f" | sort mabe_session_id event_time"
         )
 
     # ------------------------------------------------------------------
